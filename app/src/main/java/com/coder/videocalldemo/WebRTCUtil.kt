@@ -8,8 +8,15 @@ import android.webkit.WebViewClient
 import com.coder.videocalldemo.models.JavaScriptInterface
 import java.util.*
 
+enum class CallType{
+    CREATE,
+    JOIN
+}
+
 object WebRTCUtil {
 
+    var yourUniqueId = ""
+    var callType: CallType? = null
 
     fun setupWebView(webView: WebView) {
         webView.webChromeClient = object : WebChromeClient() {
@@ -23,7 +30,7 @@ object WebRTCUtil {
         loadVideoCall(webView)
     }
 
-    fun loadVideoCall(webView: WebView) {
+    private fun loadVideoCall(webView: WebView) {
         val filePath = "file:android_asset/call.html"
         webView.loadUrl(filePath)
         webView.webViewClient = object : WebViewClient() {
@@ -45,9 +52,21 @@ object WebRTCUtil {
 
 
     fun initializePeer(webView: WebView) {
-        val uniqueId = getUniqueId()
-        callJavaScriptFunction(webView, "javascript:init('$uniqueId')")
-        Log.i("initializePeer", uniqueId)
-        callJavaScriptFunction(webView, "javascript:startCall('f7d33cf8-582e-4933-9311-a5ed9fe28d21')")
+        if(callType == CallType.CREATE){
+            if(yourUniqueId.isEmpty()) {
+                yourUniqueId = getUniqueId()
+            }
+            callJavaScriptFunction(webView, "javascript:init('$yourUniqueId')")
+            Log.i("initializePeer", yourUniqueId)
+            callJavaScriptFunction(webView, "javascript:startCall('$yourUniqueId')")
+        }
+        else{
+            if(yourUniqueId.isEmpty()) {
+                yourUniqueId = getUniqueId()
+            }
+            callJavaScriptFunction(webView, "javascript:init('${getUniqueId()}')")
+            Log.i("initializePeer", yourUniqueId)
+            callJavaScriptFunction(webView, "javascript:startCall('$yourUniqueId')")
+        }
     }
 }
